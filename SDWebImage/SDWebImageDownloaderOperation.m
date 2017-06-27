@@ -280,6 +280,7 @@ didReceiveResponse:(NSURLResponse *)response
         } else {
             [self.dataTask cancel];
         }
+        self.response = response;
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:SDWebImageDownloadStopNotification object:self];
         });
