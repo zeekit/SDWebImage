@@ -296,7 +296,7 @@ didReceiveResponse:(NSURLResponse *)response
     }
 }
 
-- (NSError*)getResponseErrorWith: (NSURLResponse*)response {
+- (nullable NSError*)getResponseErrorWith: (nullable NSURLResponse*)response {
     return [NSError errorWithDomain:NSURLErrorDomain code:((NSHTTPURLResponse *)response).statusCode userInfo:nil];
 }
 
