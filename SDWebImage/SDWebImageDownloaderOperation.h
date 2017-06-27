@@ -119,6 +119,6 @@ extern NSString * _Nonnull const SDWebImageDownloadFinishNotification;
  */
 - (BOOL)cancel:(nullable id)token;
 
-- (NSError*)getResponseErrorWith: (NSURLResponse*)response;
+- (nullable NSError*)getResponseErrorWith: (nullable NSURLResponse*)response;
  
 @end
