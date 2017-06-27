@@ -285,7 +285,8 @@ didReceiveResponse:(NSURLResponse *)response
             [[NSNotificationCenter defaultCenter] postNotificationName:SDWebImageDownloadStopNotification object:self];
         });
         
-        [self callCompletionBlocksWithError:[NSError errorWithDomain:NSURLErrorDomain code:((NSHTTPURLResponse *)response).statusCode userInfo:nil]];
+        NSError* error = [self getResponseErrorWith: response];
+        [self callCompletionBlocksWithError: error];
 
         [self done];
     }
@@ -293,6 +294,10 @@ didReceiveResponse:(NSURLResponse *)response
     if (completionHandler) {
         completionHandler(NSURLSessionResponseAllow);
     }
+}
+
+- (NSError*)getResponseErrorWith: (NSURLResponse*)response {
+    return [NSError errorWithDomain:NSURLErrorDomain code:((NSHTTPURLResponse *)response).statusCode userInfo:nil];
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
