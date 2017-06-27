@@ -22,7 +22,7 @@
 
 @property (strong, nonatomic, readwrite, nonnull) SDImageCache *imageCache;
 @property (strong, nonatomic, readwrite, nonnull) SDWebImageDownloader *imageDownloader;
-@property (strong, nonatomic, nonnull) NSMutableSet<NSURL *> *failedURLs;
+@property (strong, nonatomic, nonnull) NSMutableDictionary *failedURLsDictionary;
 @property (strong, nonatomic, nonnull) NSMutableArray<SDWebImageCombinedOperation *> *runningOperations;
 
 @end
@@ -48,7 +48,7 @@
     if ((self = [super init])) {
         _imageCache = cache;
         _imageDownloader = downloader;
-        _failedURLs = [NSMutableSet new];
+        _failedURLsDictionary = [NSMutableDictionary new];
         _runningOperations = [NSMutableArray new];
     }
     return self;
@@ -123,15 +123,18 @@
     __block SDWebImageCombinedOperation *operation = [SDWebImageCombinedOperation new];
     __weak SDWebImageCombinedOperation *weakOperation = operation;
 
-    BOOL isFailedUrl = NO;
+    NSError* error = nil;
     if (url) {
-        @synchronized (self.failedURLs) {
-            isFailedUrl = [self.failedURLs containsObject:url];
+        @synchronized (self.failedURLsDictionary) {
+            error = [self.failedURLsDictionary objectForKey:url];
         }
     }
 
-    if (url.absoluteString.length == 0 || (!(options & SDWebImageRetryFailed) && isFailedUrl)) {
-        [self callCompletionBlockForOperation:operation completion:completedBlock error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorFileDoesNotExist userInfo:nil] url:url];
+    if (url.absoluteString.length == 0 || (!(options & SDWebImageRetryFailed) && error != nil)) {
+        if (error == nil) {
+            error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorFileDoesNotExist userInfo:nil];
+        }
+        [self callCompletionBlockForOperation:operation completion:completedBlock error:error url:url];
         return operation;
     }
 
@@ -188,15 +191,15 @@
                         && error.code != NSURLErrorCannotFindHost
                         && error.code != NSURLErrorCannotConnectToHost
                         && error.code != NSURLErrorNetworkConnectionLost) {
-                        @synchronized (self.failedURLs) {
-                            [self.failedURLs addObject:url];
+                        @synchronized (self.failedURLsDictionary) {
+                            [self.failedURLsDictionary setObject:error forKey:url];
                         }
                     }
                 }
                 else {
                     if ((options & SDWebImageRetryFailed)) {
-                        @synchronized (self.failedURLs) {
-                            [self.failedURLs removeObject:url];
+                        @synchronized (self.failedURLsDictionary) {
+                            [self.failedURLsDictionary removeObjectForKey:url];
                         }
                     }
                     
