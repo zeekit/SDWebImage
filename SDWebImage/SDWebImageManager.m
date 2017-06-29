@@ -135,7 +135,6 @@
             error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorFileDoesNotExist userInfo:nil];
         }
         [self callCompletionBlockForOperation:operation completion:completedBlock error:error url:url];
-        return operation;
     }
 
     @synchronized (self.runningOperations) {
